@@ -135,7 +135,7 @@ class LiteTouch(Thread):
                     for b in blist:
                         bnum = bnum + 1
                         kb = keypad + '_' + bnum # Build keypad address:
-                        kb = kb + '-' + b
+                        kb = kb + ',' + b
                         # Return LED Event and keypad/button status (binary):
                         self._callback('RLEDU', kb)
                 elif cmd == 'RMODU':
