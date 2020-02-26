@@ -45,12 +45,16 @@ class LiteTouch(Thread):
         try:
             print(command)
             self._socket.sendall((command + '\r').encode("utf-8"))
-            #handle specific requests.  Needed for LED state for specific keypad as keypad # isn't returned in response.
+            
             if ltcmd == ('CGLES'):
+                """
+                Handle LED requests.  Needed for LED state for specific 
+                keypad as keypad # isn't returned in response.
+                """
                 data = self._socket.recv(1024)
                 print(data)
                 resp = data.decode().strip('\r')
-                self._handleRequest(resp, keypad, button)
+                self._handle_request(resp, keypad, button)
             else:
                 data = ''
             return True
@@ -74,7 +78,7 @@ class LiteTouch(Thread):
         loadid = str(loadid-1)
         self._send(f'R,CSLOF, {loadid}')
     
-    def toggleSwitch(self, keypad, button):
+    def toggle_switch(self, keypad, button):
         """Toggle button on Keypad"""
         keypad = str(keypad).zfill(3)
         #button's are zero based, reduce input by 1.
@@ -83,7 +87,7 @@ class LiteTouch(Thread):
         msg = 'R,CTGSW,'+kb
         self._send(msg, keypad=keypad, button=button)
     
-    def get_LEDStates(self, keypad, button):
+    def get_led_states(self, keypad, button):
         """Get Keypad LED States"""
         keypad = str(keypad).zfill(3)
         msg = f"R,CGLES,{keypad}"
@@ -147,7 +151,7 @@ class LiteTouch(Thread):
         except ValueError:
             _LOGGER.warning("Weird data: %s", data)
     
-    def _handleRequest(self, resp, keypad, button):
+    def _handle_request(self, resp, keypad, button):
         #resplist = resp.split(',')
         print(resp, keypad, button)
 
