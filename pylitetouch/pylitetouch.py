@@ -75,6 +75,7 @@ class LiteTouch(Thread):
 
     def set_loadoff(self, loadid):
         """Turn load off."""
+        # Loads are 0 based, reduce load by 1.
         loadid = str(loadid-1)
         self._send(f'R,CSLOF, {loadid}')
     
@@ -84,7 +85,7 @@ class LiteTouch(Thread):
         #button's are zero based, reduce input by 1.
         button = str(button-1)
         kb = keypad+button
-        msg = 'R,CTGSW,'+kb
+        msg = 'R,CTGSW,' + kb
         self._send(msg, keypad=keypad, button=button)
     
     def get_led_states(self, keypad, button):
@@ -130,9 +131,12 @@ class LiteTouch(Thread):
                 if cmd == 'RLEDU':
                     keypad = raw_args[2]
                     blist = list(str(raw_args[3][0:9]))
+                    bnum = 0
                     for b in blist:
-                        kb = keypad+'_'+b
-                        #return custom keypad event name and keypad/button combo
+                        bnum = bnum + 1
+                        kb = keypad + '_' + bnum # Build keypad address:
+                        kb = kb + '-' + b
+                        # Return LED Event and keypad/button status (binary):
                         self._callback('RLEDU', kb)
                 elif cmd == 'RMODU':
                     _LOGGER.warning(f'Event: {cmd}, not handled')
