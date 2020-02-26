@@ -1,5 +1,5 @@
 
-import LiteTouch 
+import pylitetouch 
 import time
 
 host = '192.168.1.65'
@@ -11,15 +11,16 @@ def callback(msg, args):
 
 
 
-LT = LiteTouch.LiteTouch(host,port,callback)
+LT = pylitetouch.LiteTouch(host,port,callback)
 
-load = 81
+load = 105
 
 lvl = 90
 
 #LT.set_loadlevel(load,lvl)
 
-LT.set_loadon(load)
+#LT.set_loadon(load)
+LT.get_LEDStates(22,1)
 #LT.set_loadoff(load)
 
 #LT.toggleSwitch(16,2)

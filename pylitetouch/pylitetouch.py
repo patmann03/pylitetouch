@@ -4,6 +4,7 @@ import select
 import logging
 import time
 
+
 _LOGGER = logging.getLogger(__name__)
 
 POLLING_FREQ = 1.
@@ -38,14 +39,20 @@ class LiteTouch(Thread):
         except (BlockingIOError, ConnectionError, TimeoutError) as error:
             pass
     
-    def _send(self, command):
+    def _send(self, command, ltcmd=None, keypad=None, button=None):
         """Send and Encode Message to LiteTouch Controller"""
         _LOGGER.debug("send: %s", command)
         try:
             print(command)
             self._socket.sendall((command + '\r').encode("utf-8"))
-            data = self._socket.recv(1024)
-            print(f'response: {data}')
+            #handle specific requests.  Needed for LED state for specific keypad as keypad # isn't returned in response.
+            if ltcmd == ('CGLES'):
+                data = self._socket.recv(1024)
+                print(data)
+                resp = data.decode().strip('\r')
+                self._handleRequest(resp, keypad, button)
+            else:
+                data = ''
             return True
         except (ConnectionError, AttributeError):
             self._socket = None
@@ -53,31 +60,35 @@ class LiteTouch(Thread):
     
     def set_loadlevel(self, loadid, level):
         """Send Brightness level to Controller for specific load id"""
-        loadid = str(loadid)
+        loadid = str(loadid-1)
         level = str(level)
         self._send(f'R,CINLL, {loadid}, {level}')
     
     def set_loadon(self, loadid: str):
         """Turn Load on."""
-        loadid = str(loadid)
+        loadid = str(loadid-1)
         self._send(f'R,CSLON,{loadid}')
 
     def set_loadoff(self, loadid):
         """Turn load off."""
-        loadid = str(loadid)
+        loadid = str(loadid-1)
         self._send(f'R,CSLOF, {loadid}')
     
     def toggleSwitch(self, keypad, button):
         """Toggle button on Keypad"""
         keypad = str(keypad).zfill(3)
-        button = str(button)
-        self._send(f'R,CTGSW,{keypad}{button}')
+        #button's are zero based, reduce input by 1.
+        button = str(button-1)
+        kb = keypad+button
+        msg = 'R,CTGSW,'+kb
+        self._send(msg, keypad=keypad, button=button)
     
     def get_LEDStates(self, keypad, button):
         """Get Keypad LED States"""
         keypad = str(keypad).zfill(3)
         msg = f"R,CGLES,{keypad}"
-        self._send(msg)
+        time.sleep(.6)
+        self._send(msg, ltcmd='CGLES', keypad=keypad, button=button)
 
     def run(self):
         """Read and dispatch messages from the controller."""
@@ -116,7 +127,9 @@ class LiteTouch(Thread):
                     keypad = raw_args[2]
                     blist = list(str(raw_args[3][0:9]))
                     for b in blist:
-                        self._callback(keypad, b)
+                        kb = keypad+'_'+b
+                        #return custom keypad event name and keypad/button combo
+                        self._callback('RLEDU', kb)
                 elif cmd == 'RMODU':
                     _LOGGER.warning(f'Event: {cmd}, not handled')
                 else:
@@ -134,6 +147,10 @@ class LiteTouch(Thread):
         except ValueError:
             _LOGGER.warning("Weird data: %s", data)
     
+    def _handleRequest(self, resp, keypad, button):
+        #resplist = resp.split(',')
+        print(resp, keypad, button)
+
 
     def close(self):
         """Close the connection to the controller."""
