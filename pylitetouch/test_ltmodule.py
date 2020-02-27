@@ -20,11 +20,11 @@ LT = pylitetouch.LiteTouch(host,port,callback)
 
 
 
-#LT.set_loadlevel(load,lvl)
+LT.set_loadlevel(load,lvl)
 
 #LT.set_loadon(load)
 #LT.get_led_states(kp,but)
-LT.set_loadoff(load)
+#LT.set_loadoff(load)
 
 #LT.toggle_switch(kp,but)
 

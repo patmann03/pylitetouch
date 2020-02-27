@@ -6,7 +6,7 @@ Implemented Features:
   - Turn Load off by Load ID
   - Set Brightness Level by Load ID
   - Receive LED updates by keypad and button (events to determine if a load associated to the button is turned on or off)
-    - Returned as:  Keypad_Button,Status  //Example:  22_1,1  Keypad 22 button 1 is on.
+    - Returned as:  Event Keypad_Button Status  //Example:  RLEDU 22_1 1  Keypad 22 button 1 is on.
 
 
 In Development:
@@ -26,7 +26,7 @@ SAMPLE:
     kp = 22
     but = 1
 
-    def callback(msg, args):
+    def callback(msg, args, state):
 
         """Show the message are arguments."""
     
