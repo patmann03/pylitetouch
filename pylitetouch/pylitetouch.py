@@ -87,8 +87,12 @@ class LiteTouch(Thread):
         msg = 'R,CTGSW,' + kb
         self._send(msg, keypad=keypad, button=button)
     
-    def get_led_states(self, keypad, button):
+    def get_led_states(self, keypad, button=1):
         """Get Keypad LED States"""
+        if '_' in keypad:
+            button = keypad.split('_')[1]
+            keypad = keypad.split('_')[0]            
+        
         keypad = str(keypad).zfill(3)
         msg = f"R,CGLES,{keypad}"
         time.sleep(.6)
@@ -141,7 +145,7 @@ class LiteTouch(Thread):
                     _LOGGER.warning(f'Event: {cmd}, not handled')
                 else:
                     _LOGGER.warning(f'Event: {cmd}, not handled')
-                #self._eventHandler(raw_args)
+                
                 
             elif cmd == 'RCACK':
                 data = ''
@@ -161,10 +165,8 @@ class LiteTouch(Thread):
         if cmd == 'CGLES':
             status = int(resplist[3])
             status = bin(status)[2:]
-            final = len(status) - button 
+            final = len(status) - int(button)
             final = str(status)[final:][0:1]
-            print(status)
-            print(type(final), 'val: ', final)
             kb = str(keypad) + '_' + str(button)
             if len(status) == 1 and len(status) < int(button):
                 status = 0
