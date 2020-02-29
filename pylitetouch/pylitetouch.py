@@ -43,7 +43,7 @@ class LiteTouch(Thread):
         """Send and Encode Message to LiteTouch Controller"""
         _LOGGER.debug("send: %s", command)
         try:
-            print(command)
+            #print(command)
             self._socket.sendall((command + '\r').encode("utf-8"))
             
             if ltcmd == ('CGLES'):
@@ -89,14 +89,18 @@ class LiteTouch(Thread):
     
     def get_led_states(self, keypad, button=1):
         """Get Keypad LED States"""
-        if '_' in keypad:
-            button = keypad.split('_')[1]
-            keypad = keypad.split('_')[0]            
-        
-        keypad = str(keypad).zfill(3)
-        msg = f"R,CGLES,{keypad}"
-        time.sleep(.6)
-        self._send(msg, ltcmd='CGLES', keypad=keypad, button=button)
+        try:
+            if '_' in keypad:
+                button = keypad.split('_')[1]
+                keypad = keypad.split('_')[0]
+        except:
+            pass           
+        finally:
+            
+            keypad = str(keypad).zfill(3)
+            msg = f"R,CGLES,{keypad}"
+            time.sleep(.6)
+            self._send(msg, ltcmd='CGLES', keypad=keypad, button=button)
 
     def run(self):
         """Read and dispatch messages from the controller."""
