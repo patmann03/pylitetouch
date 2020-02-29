@@ -52,7 +52,6 @@ class LiteTouch(Thread):
                 keypad as keypad # isn't returned in response.
                 """
                 data = self._socket.recv(1024)
-                print(data)
                 resp = data.decode().strip('\r')
                 self._handle_request(resp, keypad, button)
             else:
@@ -135,9 +134,9 @@ class LiteTouch(Thread):
                     for b in blist:
                         bnum = bnum + 1
                         kb = keypad + '_' + str(bnum) # Build keypad address:
-                        
+                        kb = [kb,b]
                         # Return LED Event and keypad/button status (binary):
-                        self._callback('RLEDU', kb, b)
+                        self._callback('RLEDU', kb)
                 elif cmd == 'RMODU':
                     _LOGGER.warning(f'Event: {cmd}, not handled')
                 else:
@@ -156,8 +155,33 @@ class LiteTouch(Thread):
             _LOGGER.warning("Weird data: %s", data)
     
     def _handle_request(self, resp, keypad, button):
-        #resplist = resp.split(',')
-        print(resp, keypad, button)
+        """handle specific controller query"""
+        resplist = resp.split(',')
+        cmd = resplist[2]
+        if cmd == 'CGLES':
+            status = int(resplist[3])
+            status = bin(status)[2:]
+            final = len(status) - button 
+            final = str(status)[final:][0:1]
+            print(status)
+            print(type(final), 'val: ', final)
+            kb = str(keypad) + '_' + str(button)
+            if len(status) == 1 and len(status) < int(button):
+                status = 0
+                kb = [kb,status]
+                self._callback('CGLES', kb)
+            elif len(status) < int(button):
+                status = 0
+                kb = [kb,status]
+                self._callback('CGLES', kb)
+            elif final == '1':
+                status = 1
+                kb = [kb,status]
+                self._callback('CGLES', kb)
+            else:
+                status = 0
+                kb = [kb,status]
+                self._callback('CGLES', kb)
 
 
     def close(self):
