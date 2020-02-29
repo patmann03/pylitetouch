@@ -136,3 +136,4 @@ dmypy.json
 
 # vscode
 *.code-workplace
+*.vscode

@@ -1,5 +1,5 @@
 
-import pylitetouch
+from pylitetouch import LiteTouch
 import time
 
 host = '192.168.1.65'
@@ -16,7 +16,7 @@ def callback(msg, args):
 
 
 
-LT = pylitetouch.LiteTouch(host,port,callback)
+LT = LiteTouch(host,port,callback)
 
 #LT.toggle_switch(kp,but)
 
