@@ -33,7 +33,7 @@ class LiteTouch(Thread):
             self._socket = socket.create_connection((self._host, self._port))
             print('Connection Successful')
             # Setup interface and subscribe to events
-            self._send('R,SIEVN,7')     # subscribe to all events
+            self._send('R,SIEVN,4')     # subscribe to led events
             
             _LOGGER.info("Connected to %s:%d", self._host, self._port)
         except (BlockingIOError, ConnectionError, TimeoutError) as error:
@@ -43,10 +43,10 @@ class LiteTouch(Thread):
         """Send and Encode Message to LiteTouch Controller"""
         _LOGGER.debug("send: %s", command)
         try:
-            #print(command)
-            self._socket.sendall((command + '\r').encode("utf-8"))
             
-            if ltcmd == ('CGLES'):
+            self._socket.sendall((command + '\r').encode("utf-8"))
+                        
+            if ltcmd in ('CGLES', 'CGLED'):
                 """
                 Handle LED requests.  Needed for LED state for specific 
                 keypad as keypad # isn't returned in response.
@@ -57,6 +57,7 @@ class LiteTouch(Thread):
             else:
                 data = ''
             return True
+
         except (ConnectionError, AttributeError):
             self._socket = None
             return False
@@ -81,7 +82,7 @@ class LiteTouch(Thread):
     
     def toggle_switch(self, keypad, button):
         """Toggle button on Keypad"""
-        keypad = str(keypad).zfill(3)
+        keypad = str(keypad).zfill(3).upper()
         #button's are zero based, reduce input by 1.
         button = str(button-1)
         kb = keypad+button
@@ -90,18 +91,40 @@ class LiteTouch(Thread):
     
     def get_led_states(self, keypad, button=1):
         """Get Keypad LED States"""
-        try:
+        try:            
             if '_' in keypad:
                 button = keypad.split('_')[1]
                 keypad = keypad.split('_')[0]
-        except:
-            pass           
-        finally:
+                keypad = str(keypad).zfill(3).upper()
+                msg = f"R,CGLES,{keypad}"
+                time.sleep(.2)
+                self._send(msg, ltcmd='CGLES', keypad=keypad, button=button)
             
-            keypad = str(keypad).zfill(3)
+        except:            
             msg = f"R,CGLES,{keypad}"
-            time.sleep(.6)
-            self._send(msg, ltcmd='CGLES', keypad=keypad, button=button)
+            self._send(msg, ltcmd='CGLES', keypad=keypad, button=button)   
+
+    def get_led_state(self, keypad, button=1):
+        """Get Keypad LED States"""
+        #zero based buttons
+        button = int(button) - 1
+        try:            
+            if '_' in keypad:
+                button = keypad.split('_')[1]
+                button = button - 1
+                keypad = keypad.split('_')[0]
+                keypad = str(keypad).zfill(3).upper()
+                msg = f"R,CGLED,{keypad}{button}"
+                time.sleep(.2)
+                self._send(msg, ltcmd='CGLED', keypad=keypad, button=button+1)
+            
+        except: 
+            keypad = str(keypad).zfill(3).upper()           
+            msg = f"R,CGLED,{keypad}{button}"
+            self._send(msg, ltcmd='CGLED', keypad=keypad, button=button+1) 
+        
+            
+            
 
     def run(self):
         """Read and dispatch messages from the controller."""
@@ -123,7 +146,7 @@ class LiteTouch(Thread):
                         elif byte != b'\n':
                             data += byte.decode('utf-8')
                 except (ConnectionError, AttributeError):
-                    _LOGGER.warning("Lost connection.")
+                    _LOGGER.warning("Lost connection to litetouch controller, will attempt to reconnect.")
                     self._socket = None
                 except UnicodeDecodeError:
                     data = ''
@@ -167,7 +190,9 @@ class LiteTouch(Thread):
         """handle specific controller query"""
         resplist = resp.split(',')
         cmd = resplist[2]
-        if cmd == 'CGLES':
+
+        #Need to fix to return all buttons instead of single button
+        if cmd == 'CGLES':            
             status = int(resplist[3])
             status = bin(status)[2:]
             final = len(status) - int(button)
@@ -189,6 +214,11 @@ class LiteTouch(Thread):
                 status = '0'
                 kb = [kb,status]
                 self._callback('CGLES', kb)
+        else:
+            status = resplist[3]
+            kb = str(keypad) + '_' + str(button)
+            kb = [kb,status]
+            self._callback('CGLED', kb)
 
 
     def close(self):

@@ -7,8 +7,8 @@ port = 10001
 
 load = 105
 lvl = 20
-kp = 22
-but = 8
+kp = 14
+but = 9
 
 def callback(msg, args):
     """Show the message are arguments."""
@@ -17,13 +17,14 @@ def callback(msg, args):
 
 
 LT = LiteTouch(host,port,callback)
-
+LT
+time.sleep(.3)
 #LT.toggle_switch(kp,but)
 
 #LT.set_loadlevel(load,lvl)
 
 #LT.set_loadon(load)
-LT.get_led_states(kp,but)
+LT.get_led_state(kp,but)
 #LT.set_loadoff(load)
 
 
