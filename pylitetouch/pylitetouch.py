@@ -130,6 +130,7 @@ class LiteTouch(Thread):
         while self._running:
             if self._socket == None:
                 time.sleep(POLLING_FREQ)
+                _LOGGER.debug(f"socket: {self._socket}.  Reconnecting")
                 self._connect()
             else:
                 try:
