@@ -30,7 +30,7 @@ LT.get_led_state(kp,but)
 
 
 print('Waiting for Messages')
-time.sleep(10.)
+time.sleep(315)
 
 print('Close Connection')
 LT.close()

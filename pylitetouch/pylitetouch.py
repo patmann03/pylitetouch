@@ -30,6 +30,7 @@ class LiteTouch(Thread):
 
     def _connect(self):
         try:
+            
             self._socket = socket.create_connection((self._host, self._port))
             print("Connection Successful")
             # Setup interface and subscribe to events
@@ -126,6 +127,7 @@ class LiteTouch(Thread):
     def run(self):
         """Read and dispatch messages from the controller."""
         self._running = True
+        chk = 0
         data = ""
         while self._running:
             if self._socket == None:
@@ -143,7 +145,15 @@ class LiteTouch(Thread):
                                 data = ""
                         elif byte != b"\n":
                             data += byte.decode("utf-8")
-                except (ConnectionError, AttributeError):
+                    elif chk > 120:
+                        self._send("R,SIEVN,4")
+                        _LOGGER.debug("Litetouch: Keep Alive")
+                        chk = 0
+                    else:
+                        chk = chk + 1
+
+
+                except (ConnectionError, AttributeError, TimeoutError):
                     _LOGGER.warning(
                         "Lost connection to litetouch controller, will attempt to reconnect."
                     )
