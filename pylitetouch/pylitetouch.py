@@ -112,7 +112,7 @@ class LiteTouch(Thread):
         try:
             if "_" in keypad:
                 button = keypad.split("_")[1]
-                button = button - 1
+                button = int(button) - 1
                 keypad = keypad.split("_")[0]
                 keypad = str(keypad).zfill(3).upper()
                 msg = f"R,CGLED,{keypad}{button}"
@@ -224,9 +224,12 @@ class LiteTouch(Thread):
                 kb = [kb, status]
                 self._callback("CGLES", kb)
         else:
-            status = resplist[3]
+            status = int(resplist[3])
+            
             kb = str(keypad) + "_" + str(button)
+            print(kb)
             kb = [kb, status]
+            print(kb)
             self._callback("CGLED", kb)
 
     def close(self):

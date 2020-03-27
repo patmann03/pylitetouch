@@ -7,8 +7,9 @@ port = 10001
 
 load = 105
 lvl = 20
-kp = 14
-but = 9
+kp = '14'
+but = '9'
+kb = kp + '_' + but
 
 def callback(msg, args):
     """Show the message are arguments."""
@@ -24,13 +25,13 @@ time.sleep(.3)
 #LT.set_loadlevel(load,lvl)
 
 #LT.set_loadon(load)
-LT.get_led_state(kp,but)
+LT.get_led_state(kb)
 #LT.set_loadoff(load)
 
 
 
 print('Waiting for Messages')
-time.sleep(315)
+time.sleep(10)
 
 print('Close Connection')
 LT.close()
