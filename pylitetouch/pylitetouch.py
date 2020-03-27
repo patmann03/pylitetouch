@@ -116,7 +116,7 @@ class LiteTouch(Thread):
                 keypad = keypad.split("_")[0]
                 keypad = str(keypad).zfill(3).upper()
                 msg = f"R,CGLED,{keypad}{button}"
-                time.sleep(0.2)
+                #time.sleep(0.2)
                 self._send(msg, ltcmd="CGLED", keypad=keypad, button=button + 1)
 
         except:
@@ -227,9 +227,7 @@ class LiteTouch(Thread):
             status = int(resplist[3])
             
             kb = str(keypad) + "_" + str(button)
-            print(kb)
             kb = [kb, status]
-            print(kb)
             self._callback("CGLED", kb)
 
     def close(self):
