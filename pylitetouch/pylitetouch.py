@@ -146,12 +146,12 @@ class LiteTouch(Thread):
                                 data = ""
                         elif byte != b"\n":
                             data += byte.decode("utf-8")
-                    elif chk > 120:
-                        self._send("R,SIEVN,4")
-                        _LOGGER.debug("Litetouch: Keep Alive")
-                        chk = 0
-                    else:
-                        chk = chk + 1
+                    # elif chk > 120:
+                    #     self._send("R,SIEVN,4")
+                    #     _LOGGER.debug("Litetouch: Keep Alive")
+                    #     chk = 0
+                    # else:
+                    #     chk = chk + 1
 
 
                 except (ConnectionError, AttributeError, TimeoutError):
@@ -197,39 +197,41 @@ class LiteTouch(Thread):
 
     def _handle_request(self, resp, keypad, button):
         """handle specific controller query"""
-        resplist = resp.split(",")
-        cmd = resplist[2]
+        try:
+            resplist = resp.split(",")
+            cmd = resplist[2]
 
-        # Need to fix to return all buttons instead of single button
-        if cmd == "CGLES":
-            status = int(resplist[3])
-            status = bin(status)[2:]
-            final = len(status) - int(button)
-            final = str(status)[final:][0:1]
-            kb = str(keypad) + "_" + str(button)
-            if len(status) == 1 and len(status) < int(button):
-                status = "0"
-                kb = [kb, status]
-                self._callback("CGLES", kb)
-            elif len(status) < int(button):
-                status = "0"
-                kb = [kb, status]
-                self._callback("CGLES", kb)
-            elif final == "1":
-                status = "1"
-                kb = [kb, status]
-                self._callback("CGLES", kb)
+            # Need to fix to return all buttons instead of single button
+            if cmd == "CGLES":
+                status = int(resplist[3])
+                status = bin(status)[2:]
+                final = len(status) - int(button)
+                final = str(status)[final:][0:1]
+                kb = str(keypad) + "_" + str(button)
+                if len(status) == 1 and len(status) < int(button):
+                    status = "0"
+                    kb = [kb, status]
+                    self._callback("CGLES", kb)
+                elif len(status) < int(button):
+                    status = "0"
+                    kb = [kb, status]
+                    self._callback("CGLES", kb)
+                elif final == "1":
+                    status = "1"
+                    kb = [kb, status]
+                    self._callback("CGLES", kb)
+                else:
+                    status = "0"
+                    kb = [kb, status]
+                    self._callback("CGLES", kb)
             else:
-                status = "0"
-                kb = [kb, status]
-                self._callback("CGLES", kb)
-        else:
-            status = int(resplist[3])
+                status = int(resplist[3])
             
-            kb = str(keypad) + "_" + str(button)
-            kb = [kb, status]
-            self._callback("CGLED", kb)
-
+                kb = str(keypad) + "_" + str(button)
+                kb = [kb, status]
+                self._callback("CGLED", kb)
+        except:
+            _LOGGER.debug("invalid response")
     def close(self):
         """Close the connection to the controller."""
         self._running = False
