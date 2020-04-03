@@ -55,6 +55,7 @@ class LiteTouch(Thread):
                 """
                 try:
                     data = self._socket.recv(100)
+                    _LOGGER.debug(f"Handle LED Response: {data}")
                     resp = data.decode().strip("\r")
                     self._handle_request(resp, keypad, button)
                 except:

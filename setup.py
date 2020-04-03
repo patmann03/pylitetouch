@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pylitetouch",  # Replace with your own username
-    version="0.1.1",
+    version="0.1.3",
     author="Patrick Carr",
     author_email="patrick.carr03@gmail.com",
     description="LiteTouch 5000LC",
