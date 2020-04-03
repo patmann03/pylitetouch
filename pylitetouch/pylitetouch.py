@@ -3,6 +3,7 @@ from threading import Thread
 import select
 import logging
 import time
+from datetime import datetime
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -63,6 +64,12 @@ class LiteTouch(Thread):
             self._socket = None
             return False
 
+    def set_clock(self):
+        """Set clock"""
+        clock=datetime.today().strftime('%Y%m%d%H%M%S')
+        print(clock)
+        self._send(f"R,DSCLK,{clock}")
+    
     def set_loadlevel(self, loadid, level):
         """Send Brightness level to Controller for specific load id"""
         loadid = str(loadid - 1)

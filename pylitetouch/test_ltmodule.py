@@ -26,6 +26,7 @@ time.sleep(.3)
 
 #LT.set_loadon(load)
 LT.get_led_state(kb)
+LT.set_clock()
 #LT.set_loadoff(load)
 
 
