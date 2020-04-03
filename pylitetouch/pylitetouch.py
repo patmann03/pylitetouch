@@ -164,7 +164,6 @@ class LiteTouch(Thread):
                                 data += byte.decode("utf-8")
                         except(socket.timeout):
                             _LOGGER.debug("Socket Timeout")
-                            print("timeout error")
                             data = ""
                             continue
                     elif chk > 120:
