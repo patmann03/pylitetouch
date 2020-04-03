@@ -53,9 +53,12 @@ class LiteTouch(Thread):
                 Handle LED requests.  Needed for LED state for specific 
                 keypad as keypad # isn't returned in response.
                 """
-                data = self._socket.recv(1024)
-                resp = data.decode().strip("\r")
-                self._handle_request(resp, keypad, button)
+                try:
+                    data = self._socket.recv(100)
+                    resp = data.decode().strip("\r")
+                    self._handle_request(resp, keypad, button)
+                except:
+                    _LOGGER.debug("Bad Response from Controller")
             else:
                 data = ""
             return True
