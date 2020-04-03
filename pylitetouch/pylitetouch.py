@@ -157,12 +157,12 @@ class LiteTouch(Thread):
                                 data = ""
                         elif byte != b"\n":
                             data += byte.decode("utf-8")
-                    # elif chk > 120:
-                    #     self._send("R,SIEVN,4")
-                    #     _LOGGER.debug("Litetouch: Keep Alive")
-                    #     chk = 0
-                    # else:
-                    #     chk = chk + 1
+                    elif chk > 120:
+                        self._send("R,SIEVN,4")
+                        _LOGGER.debug("Litetouch: Keep Alive")
+                        chk = 0
+                    else:
+                        chk = chk + 1
 
 
                 except (ConnectionError, AttributeError, TimeoutError):
