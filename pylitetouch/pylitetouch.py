@@ -32,13 +32,16 @@ class LiteTouch(Thread):
     def _connect(self):
         try:
             
-            self._socket = socket.create_connection((self._host, self._port))
+            self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._socket.setsockopt( socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+            self._socket.settimeout(5.0)
+            self._socket.connect((self._host, self._port))
             print("Connection Successful")
             # Setup interface and subscribe to events
             self._send("R,SIEVN,4")  # subscribe to led events
 
             _LOGGER.info("Connected to %s:%d", self._host, self._port)
-        except (BlockingIOError, ConnectionError, TimeoutError) as error:
+        except (BlockingIOError, ConnectionError, TimeoutError, socket.timeout) as error:
             pass
 
     def _send(self, command, ltcmd=None, keypad=None, button=None):
@@ -54,12 +57,13 @@ class LiteTouch(Thread):
                 keypad as keypad # isn't returned in response.
                 """
                 try:
-                    data = self._socket.recv(100)
-                    _LOGGER.debug(f"Handle LED Response: {data}")
+                    data = self._socket.recv(1024)
                     resp = data.decode().strip("\r")
                     self._handle_request(resp, keypad, button)
-                except:
-                    _LOGGER.debug("Bad Response from Controller")
+                except(socket.timeout):
+                    print("timeout error")
+                    _LOGGER.debug("Timeout error")
+                    data = ''
             else:
                 data = ""
             return True
@@ -150,13 +154,19 @@ class LiteTouch(Thread):
                 try:
                     readable, _, _ = select.select([self._socket], [], [], POLLING_FREQ)
                     if len(readable) != 0:
-                        byte = self._socket.recv(1)
-                        if byte == b"\r":
-                            if len(data) > 0:
-                                self._processReceivedData(data)
-                                data = ""
-                        elif byte != b"\n":
-                            data += byte.decode("utf-8")
+                        try:
+                            byte = self._socket.recv(1)
+                            if byte == b"\r":
+                                if len(data) > 0:
+                                    self._processReceivedData(data)
+                                    data = ""
+                            elif byte != b"\n":
+                                data += byte.decode("utf-8")
+                        except(socket.timeout):
+                            _LOGGER.debug("Socket Timeout")
+                            print("timeout error")
+                            data = ""
+                            continue
                     elif chk > 120:
                         self._send("R,SIEVN,4")
                         _LOGGER.debug("Litetouch: Keep Alive")
