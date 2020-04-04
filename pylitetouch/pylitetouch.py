@@ -72,10 +72,11 @@ class LiteTouch(Thread):
             self._socket = None
             return False
 
-    def set_clock(self):
+    def set_clock(self, clock = None):
         """Set clock"""
-        clock=datetime.today().strftime('%Y%m%d%H%M%S')
-        print(clock)
+        if clock is None:
+            clock=datetime.today().strftime('%Y%m%d%H%M%S')
+        
         self._send(f"R,DSCLK,{clock}")
     
     def set_loadlevel(self, loadid, level):
