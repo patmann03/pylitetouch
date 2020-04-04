@@ -113,7 +113,6 @@ class LiteTouch(Thread):
                 keypad = keypad.split("_")[0]
                 keypad = str(keypad).zfill(3).upper()
                 msg = f"R,CGLES,{keypad}"
-                time.sleep(0.2)
                 self._send(msg, ltcmd="CGLES", keypad=keypad, button=button)
 
         except:
@@ -131,7 +130,6 @@ class LiteTouch(Thread):
                 keypad = keypad.split("_")[0]
                 keypad = str(keypad).zfill(3).upper()
                 msg = f"R,CGLED,{keypad}{button}"
-                time.sleep(0.4)
                 self._send(msg, ltcmd="CGLED", keypad=keypad, button=button + 1)
 
         except:
