@@ -83,7 +83,7 @@ class LiteTouch(Thread):
         """Send Brightness level to Controller for specific load id"""
         loadid = str(loadid - 1)
         level = str(level)
-        _LOGGER.debug("pylt set brightness: %s, %s", (loadid, level))
+        _LOGGER.debug(f"pylt set brightness: {loadid} {level}")
         self._send(f"R,CINLL, {loadid}, {level}")
 
     def set_loadon(self, loadid: str):
